@@ -18,15 +18,22 @@ class Game extends React.Component {
     const history = this.state.history.slice(0, this.state.stepNumber + 1);
     const current = history[history.length - 1];
     const squares = current.squares.slice();
+    
     if (calculateWinner(squares) || squares[i]) {
       return;
     }
+
+    // Determine square coordinates from index of square
+    const xCoord = i % 3;
+    const yCoord = Math.floor(i / 3);
 
     squares[i] = this.currentPlayerMarking();
 
     this.setState({
       history: history.concat([{
         squares: squares,
+        xCoord: xCoord,
+        yCoord: yCoord,
       }]), 
       stepNumber: history.length,
       xIsNext: !this.state.xIsNext,
@@ -49,14 +56,16 @@ class Game extends React.Component {
     const current = history[this.state.stepNumber];
     const winner = calculateWinner(current.squares);
 
-    const moves = history.map((step, move) => {
-      const desc = move ?
-        'Go to move # ' + move :
+    const moves = history.map((step, index) => {
+      const desc = index ?
+        `Go to move #${index} (${step.xCoord}, ${step.yCoord})` :
         'Go to game start';
 
       return (
-        <li key={move}>
-          <button onClick={() => this.jumpTo(move)}>{desc}</button>
+        <li key={index}>
+          <button onClick={() => this.jumpTo(index)}>
+            {desc}
+          </button>
         </li>
       )
     });
@@ -65,7 +74,7 @@ class Game extends React.Component {
     if (winner) {
       status = 'Winner: ' + winner;
     } else {
-      status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
+      status = 'Next player: ' + this.currentPlayerMarking();
     }
 
     return (
